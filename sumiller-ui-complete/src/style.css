@@ -1,0 +1,25 @@
+html, body, #app {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden; /* Evita el scroll en el cuerpo principal */
+}
+
+@import "tailwindcss";
+
+@theme {
+  --color-brand-dark: #2B2118;
+  --color-brand-red: #6F1A07;
+  --color-brand-light: #F5F5F5;
+  --color-brand-cream: #EFE6DD;
+  --color-brand-gray: #A9A9A9;
+
+  /* Colores para el botón de Google */
+  --color-google-blue: #4285F4;
+  --color-google-blue-hover: #357ae8;
+
+  --font-sans: 'Inter', sans-serif;
+  --font-serif: 'Playfair Display', serif;
+  --font-hand: 'Dancing Script', cursive;
+  --font-roboto: 'Roboto', sans-serif;
+} 

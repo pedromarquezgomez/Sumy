@@ -1,0 +1,122 @@
+# ===== PYTHON =====
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# ===== ENTORNOS VIRTUALES =====
+venv/
+env/
+ENV/
+.venv/
+.env/
+
+# ===== VARIABLES DE ENTORNO =====
+.env
+.env.local
+.env.production
+.env.test
+.env.sumiller
+
+# ===== LOGS =====
+*.log
+sumiller.log
+api.log
+query.log
+recommendations.log
+
+# ===== MEMORIA Y CACHE =====
+memory_cache/
+*.memory
+*.cache
+session_data/
+memory_store/
+
+# ===== FILTROS Y QUERIES =====
+query_filters/cache/
+filters_temp/
+*.filter
+query_cache/
+processed_queries/
+
+# ===== RECOMENDACIONES =====
+recommendations_temp/
+temp_queries/
+*.recommendations
+recommendations_cache/
+
+# ===== DATOS DE VINOS =====
+wine_data/temp/
+wine_cache/
+*.wine_temp
+wine_embeddings/
+wine_vectors/
+
+# ===== SESIONES DE USUARIO =====
+user_sessions/
+preferences/
+*.session
+user_data/
+
+# ===== TESTING =====
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+test_recommendations/
+test_queries/
+test_memory/
+test_memory_data/
+test_wine_data/
+*.test.memory
+*.test.recommendations
+
+# ===== ARCHIVOS TEMPORALES =====
+*.tmp
+*.temp
+temp/
+tmp/
+*.backup
+*.bak
+*_backup.*
+*~
+
+# ===== COPIAS DE ARCHIVOS =====
+main copy.py.bak
+*.copy
+*_copy.*
+
+# ===== CONFIGURACIONES LOCALES =====
+config.local.py
+sumiller.local.conf
+settings.local.py
+
+# ===== IDEs =====
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ===== JUPYTER =====
+.ipynb_checkpoints 
