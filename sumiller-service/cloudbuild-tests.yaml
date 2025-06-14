@@ -1,0 +1,67 @@
+# ===================================
+# GOOGLE CLOUD BUILD - TESTS CI/CD
+# Sumiller Service - Pipeline de Tests
+# ===================================
+
+steps:
+  # 1. Instalar dependencias y ejecutar tests unitarios
+  - name: 'python:3.11-slim'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        echo "🐍 Configurando entorno Python..."
+        apt-get update -qq && apt-get install -y -qq curl
+        pip install --upgrade pip --quiet
+        pip install -r requirements.txt --quiet
+        echo "✅ Dependencias instaladas"
+        
+        echo "🧪 Ejecutando tests unitarios..."
+        export ENVIRONMENT=test
+        export PYTHONPATH=$(pwd)
+        export SQLITE_DB_PATH=:memory:
+        export OPENAI_API_KEY=test-key-not-used
+        export LOG_LEVEL=ERROR
+        
+        python3 test_runner.py
+        echo "✅ Tests unitarios completados"
+    env:
+      - 'ENVIRONMENT=test'
+      - 'SQLITE_DB_PATH=:memory:'
+      - 'OPENAI_API_KEY=test-key-not-used'
+      - 'LOG_LEVEL=ERROR'
+
+  # 2. Construir y probar contenedor
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'sumiller-test-image', '.']
+  
+  - name: 'gcr.io/cloud-builders/docker'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        echo "🐳 Probando contenedor..."
+        
+        # Ejecutar contenedor en background
+        docker run -d --name sumiller-test-container \
+          -e ENVIRONMENT=test \
+          -e OPENAI_API_KEY=test-key \
+          -p 8080:8080 sumiller-test-image
+        
+        # Esperar a que esté listo
+        echo "⏳ Esperando a que el servicio esté listo..."
+        sleep 15
+        
+        # Probar endpoints básicos
+        echo "🔍 Probando health endpoint..."
+        docker exec sumiller-test-container curl -f http://localhost:8080/health || exit 1
+        
+        echo "🔍 Probando stats endpoint..."
+        docker exec sumiller-test-container curl -f http://localhost:8080/stats || exit 1
+        
+        # Limpiar
+        docker stop sumiller-test-container || true
+        docker rm sumiller-test-container || true
+        echo "✅ Tests de contenedor completados"
+
+timeout: '900s'  # 15 minutos 

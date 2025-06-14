@@ -1,0 +1,109 @@
+# ===== PYTHON =====
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# ===== ENTORNOS VIRTUALES =====
+venv/
+env/
+ENV/
+.venv/
+.env/
+
+# ===== VARIABLES DE ENTORNO =====
+.env
+.env.local
+.env.production
+.env.test
+
+# ===== LOGS =====
+logs/
+*.log
+app.log
+error.log
+debug.log
+rag.log
+
+# ===== DATOS Y CACHE =====
+data_loaders/cache/
+data_loaders/temp/
+data_loaders/*.cache
+data_loaders/processed/
+
+# ===== KNOWLEDGE BASE =====
+knowledge_base/temp/
+knowledge_base/cache/
+knowledge_base/*.tmp
+knowledge_base/processed/
+knowledge_base/embeddings/
+
+# ===== VECTOR STORES Y EMBEDDINGS =====
+*.faiss
+*.index
+vector_store/
+embeddings_cache/
+chroma_db/
+*.db
+*.sqlite
+*.sqlite3
+
+# ===== MODELOS =====
+models/
+*.model
+*.bin
+*.safetensors
+*.onnx
+huggingface_cache/
+
+# ===== TESTING =====
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+test_outputs/
+test_data/generated/
+
+# ===== ARCHIVOS TEMPORALES =====
+*.tmp
+*.temp
+temp/
+tmp/
+*.backup
+*.bak
+*~
+
+# ===== CONFIGURACIONES LOCALES =====
+config.local.json
+config.local.py
+settings.local.py
+
+# ===== IDEs =====
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ===== JUPYTER =====
+.ipynb_checkpoints 
