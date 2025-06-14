@@ -281,7 +281,7 @@ async def filter_and_classify_query(openai_client: AsyncOpenAI, user_query: str)
     # Agregar flag de si debe usar RAG
     should_use_rag = (
         classification["category"] == "WINE_SEARCH" and 
-        classification["confidence"] > 0.6
+        classification["confidence"] > 0.2
     )
     
     classification["should_use_rag"] = should_use_rag

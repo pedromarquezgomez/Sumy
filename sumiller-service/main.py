@@ -40,6 +40,9 @@ ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
 # URL del servicio de búsqueda (opcional)
 SEARCH_SERVICE_URL = os.getenv("SEARCH_SERVICE_URL", "")
 
+# ✨ NUEVO: URL del servicio RAG para conocimiento profundo
+RAG_SERVICE_URL = os.getenv("RAG_SERVICE_URL", "https://agentic-rag-service-597742621765.europe-west1.run.app")
+
 # Configuración del servidor
 HOST = os.getenv("HOST", "0.0.0.0")
 PORT = int(os.getenv("PORT", "8080"))
@@ -137,6 +140,44 @@ WINE_KNOWLEDGE = [
         "temperature": "6-8°C"
     }
 ]
+
+# ✨ NUEVA FUNCIÓN: Consultar RAG service para conocimiento profundo
+async def query_rag_service(query: str, context: Dict[str, Any] = None) -> Dict[str, Any]:
+    """
+    Consultar el servicio RAG para obtener conocimiento profundo sobre vinos y sumillería.
+    """
+    try:
+        if not RAG_SERVICE_URL:
+            logger.warning("⚠️ RAG_SERVICE_URL no configurada")
+            return {"answer": "", "sources": [], "error": "RAG service not configured"}
+        
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            payload = {
+                "query": query,
+                "context": context or {},
+                "max_results": 3
+            }
+            
+            logger.info(f"🤖 Consultando RAG service: {query}")
+            response = await client.post(
+                f"{RAG_SERVICE_URL}/query",
+                json=payload
+            )
+            
+            if response.status_code == 200:
+                rag_data = response.json()
+                logger.info(f"✅ RAG response: {len(rag_data.get('sources', []))} fuentes encontradas")
+                return rag_data
+            else:
+                logger.error(f"❌ RAG service error: {response.status_code} - {response.text}")
+                return {"answer": "", "sources": [], "error": f"RAG service returned {response.status_code}"}
+                
+    except httpx.TimeoutException:
+        logger.error("⏰ Timeout consultando RAG service")
+        return {"answer": "", "sources": [], "error": "RAG service timeout"}
+    except Exception as e:
+        logger.error(f"❌ Error consultando RAG service: {e}")
+        return {"answer": "", "sources": [], "error": str(e)}
 
 async def search_wines(query: str, max_results: int = 3) -> List[Dict[str, Any]]:
     """Búsqueda de vinos en la base de conocimientos local."""
@@ -271,6 +312,85 @@ Proporciona una explicación clara y profesional."""
         else:
             return "Como sumiller, puedo ayudarte con recomendaciones de vinos. ¿Qué tipo de vino buscas?"
 
+# ✨ NUEVA FUNCIÓN: Generar respuesta del sumiller usando RAG + IA
+async def generate_sumiller_response_with_rag(
+    query: str, 
+    rag_response: Dict[str, Any], 
+    user_context: Dict[str, Any],
+    category: str = "WINE_THEORY"
+) -> str:
+    """Generar respuesta del sumiller combinando RAG con OpenAI."""
+    
+    if not openai_client:
+        # Respuesta fallback usando solo RAG
+        if rag_response.get("answer"):
+            return rag_response["answer"]
+        elif rag_response.get("sources"):
+            sources_text = "\n".join([src.get("content", "")[:200] + "..." 
+                                    for src in rag_response["sources"][:2]])
+            return f"Basándome en mi conocimiento: {sources_text}"
+        else:
+            return "No encontré información específica para tu consulta."
+    
+    try:
+        # Extraer información del RAG
+        rag_sources = rag_response.get("sources", [])
+        rag_content = ""
+        
+        if rag_sources:
+            rag_content = "Información de la base de conocimientos:\n\n"
+            for i, source in enumerate(rag_sources[:3], 1):
+                content = source.get("content", "")
+                # Tomar las primeras 300 caracteres de cada fuente
+                summary = content[:300] + "..." if len(content) > 300 else content
+                rag_content += f"Fuente {i}: {summary}\n\n"
+        
+        # Contexto del usuario
+        context_info = ""
+        if user_context.get("recent_conversations"):
+            context_info = f"Contexto del usuario: Ha consultado recientemente sobre {len(user_context['recent_conversations'])} temas."
+        
+        # Prompt especializado para combinar RAG + sumiller
+        system_prompt = """Eres Sumy, un sumiller profesional experto. Tienes acceso a una base de conocimientos especializada.
+
+Tu tarea es proporcionar respuestas profesionales y educativas basándote en:
+1. La información específica de tu base de conocimientos
+2. Tu experiencia como sumiller profesional
+3. El contexto del usuario
+
+Combina la información técnica con consejos prácticos y recomendaciones personalizadas.
+Sé amigable pero profesional, y explica conceptos de manera clara."""
+        
+        user_content = f"""Consulta: "{query}"
+
+{rag_content}
+
+{context_info}
+
+Proporciona una respuesta completa y profesional como sumiller experto."""
+
+        response = await openai_client.chat.completions.create(
+            model=OPENAI_MODEL,
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_content}
+            ],
+            temperature=0.7,
+            max_tokens=500
+        )
+        
+        return response.choices[0].message.content.strip()
+        
+    except Exception as e:
+        logger.error(f"Error generando respuesta RAG+IA: {e}")
+        # Fallback usando solo RAG
+        if rag_response.get("sources"):
+            sources_text = "\n\n".join([src.get("content", "")[:200] 
+                                      for src in rag_response["sources"][:2]])
+            return f"Basándome en mi conocimiento:\n\n{sources_text}"
+        else:
+            return "Como sumiller, puedo ayudarte con información sobre vinos. ¿Qué te gustaría saber?"
+
 # 🆕 ENDPOINT PRINCIPAL CON FILTRO INTELIGENTE
 @app.post("/query", response_model=SumillerResponse)
 async def sumiller_query_with_filter(request: QueryRequest = Body(...)):
@@ -315,10 +435,22 @@ async def sumiller_query_with_filter(request: QueryRequest = Body(...)):
             response_text = CATEGORY_RESPONSES.get(category, "Como sumiller, me especializo en vinos.")
             
         elif category == "WINE_THEORY":
-            # Respuesta teórica con IA
-            response_text = await generate_sumiller_response(
-                request.query, [], user_context, category
-            )
+            # ✨ USAR RAG para conocimiento profundo sobre teoría de vinos
+            logger.info("🎓 Consultando RAG para conocimiento teórico...")
+            rag_response = await query_rag_service(request.query, user_context)
+            
+            if rag_response.get("answer") and not rag_response.get("error"):
+                # Combinar RAG con respuesta personalizada del sumiller
+                response_text = await generate_sumiller_response_with_rag(
+                    request.query, rag_response, user_context, category
+                )
+                used_rag = True
+            else:
+                # Fallback a respuesta normal si RAG falla
+                logger.warning(f"⚠️ RAG falló: {rag_response.get('error', 'Unknown error')}")
+                response_text = await generate_sumiller_response(
+                    request.query, [], user_context, category
+                )
             
         elif category == "WINE_SEARCH" and should_search:
             # Búsqueda de vinos + respuesta con IA

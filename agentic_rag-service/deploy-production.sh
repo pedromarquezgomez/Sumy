@@ -13,7 +13,7 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Configuración
-PROJECT_ID="maitre-ia"
+PROJECT_ID="multiagentes-ia"
 SERVICE_NAME="agentic-rag-service"
 REGION="europe-west1"
 IMAGE_NAME="gcr.io/${PROJECT_ID}/${SERVICE_NAME}"
@@ -106,7 +106,7 @@ gcloud run deploy ${SERVICE_NAME} \
     --cpu 2 \
     --timeout 300 \
     --concurrency 100 \
-    --max-instances 10 \
+    --max-instances 3 \
     --min-instances 0 \
     --set-env-vars="ENVIRONMENT=production,USE_EMBEDDED_CHROMA=true,PYTHONUNBUFFERED=1" \
     ${USE_SECRETS}

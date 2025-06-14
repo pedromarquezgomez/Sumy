@@ -24,6 +24,9 @@ COPY main.py .
 # Crear directorios necesarios
 RUN mkdir -p /app/data /app/knowledge_base /app/vector_db /app/logs
 
+# Copiar base de conocimientos
+COPY knowledge_base/ /app/knowledge_base/
+
 # Variables de entorno para Cloud Run
 ENV PYTHONPATH=/app
 ENV ENVIRONMENT=production
