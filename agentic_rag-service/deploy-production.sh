@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Script de despliegue para Agentic RAG Service en Google Cloud Run
-# Basado en el script del sumiller-service
+# Optimizado para producción
 
 set -e
 
@@ -47,12 +47,35 @@ echo -e "${YELLOW}🔧 Habilitando APIs necesarias...${NC}"
 gcloud services enable cloudbuild.googleapis.com
 gcloud services enable run.googleapis.com
 gcloud services enable containerregistry.googleapis.com
+gcloud services enable secretmanager.googleapis.com
+
+# Preguntar por OpenAI API Key si se quiere usar
+echo -e "${YELLOW}🔑 Configuración de OpenAI (opcional)${NC}"
+read -p "¿Deseas configurar una API Key de OpenAI? (y/N): " -n 1 -r
+echo
+if [[ $REPLY =~ ^[Yy]$ ]]; then
+    read -p "Ingresa tu OpenAI API Key: " OPENAI_KEY
+    
+    # Crear o actualizar secreto
+    echo -e "${YELLOW}🔐 Configurando secreto en Secret Manager...${NC}"
+    echo -n "${OPENAI_KEY}" | gcloud secrets create openai-api-key --data-file=- 2>/dev/null || \
+    echo -n "${OPENAI_KEY}" | gcloud secrets versions add openai-api-key --data-file=-
+    
+    # Dar permisos a Cloud Run
+    PROJECT_NUMBER=$(gcloud projects describe ${PROJECT_ID} --format="value(projectNumber)")
+    gcloud secrets add-iam-policy-binding openai-api-key \
+        --member="serviceAccount:${PROJECT_NUMBER}-compute@developer.gserviceaccount.com" \
+        --role="roles/secretmanager.secretAccessor"
+    
+    USE_SECRETS="--set-secrets=OPENAI_API_KEY=openai-api-key:latest"
+else
+    USE_SECRETS=""
+fi
 
 # Construir imagen Docker
 echo -e "${YELLOW}🏗️ Construyendo imagen Docker...${NC}"
 docker build -t ${IMAGE_NAME}:latest .
 
-# Verificar que la imagen se construyó correctamente
 if [ $? -ne 0 ]; then
     echo -e "${RED}❌ Error construyendo la imagen Docker${NC}"
     exit 1
@@ -79,12 +102,14 @@ gcloud run deploy ${SERVICE_NAME} \
     --platform managed \
     --allow-unauthenticated \
     --port 8080 \
-    --memory 2Gi \
+    --memory 4Gi \
     --cpu 2 \
     --timeout 300 \
-    --set-env-vars="ENVIRONMENT=production,USE_EMBEDDED_CHROMA=true" \
+    --concurrency 100 \
     --max-instances 10 \
-    --min-instances 0
+    --min-instances 0 \
+    --set-env-vars="ENVIRONMENT=production,USE_EMBEDDED_CHROMA=true,PYTHONUNBUFFERED=1" \
+    ${USE_SECRETS}
 
 if [ $? -ne 0 ]; then
     echo -e "${RED}❌ Error desplegando en Cloud Run${NC}"
@@ -104,6 +129,19 @@ sleep 10
 # Test health check
 if curl -f "${SERVICE_URL}/health" > /dev/null 2>&1; then
     echo -e "${GREEN}✅ Health check exitoso${NC}"
+    
+    # Test básico de query
+    echo -e "${YELLOW}🧪 Realizando test de consulta...${NC}"
+    TEST_RESPONSE=$(curl -s -X POST "${SERVICE_URL}/query" \
+        -H "Content-Type: application/json" \
+        -d '{"query": "¿Qué es un tanino?", "max_results": 3}')
+    
+    if [[ $TEST_RESPONSE == *"answer"* ]]; then
+        echo -e "${GREEN}✅ Test de consulta exitoso${NC}"
+    else
+        echo -e "${YELLOW}⚠️ Test de consulta no devolvió respuesta esperada${NC}"
+    fi
+    
     echo -e "${GREEN}🎉 Agentic RAG Service desplegado y funcionando correctamente!${NC}"
 else
     echo -e "${YELLOW}⚠️ Health check falló, pero el servicio puede estar iniciándose...${NC}"
@@ -119,4 +157,6 @@ echo -e "${BLUE}• Health Check: ${SERVICE_URL}/health${NC}"
 echo -e "${BLUE}• Query Endpoint: ${SERVICE_URL}/query${NC}"
 echo -e "${BLUE}• Documents Endpoint: ${SERVICE_URL}/documents${NC}"
 
-echo -e "${GREEN}🚀 Despliegue completado!${NC}" 
+# Mostrar logs en tiempo real
+echo -e "${YELLOW}📊 Mostrando logs del servicio (Ctrl+C para salir)...${NC}"
+gcloud logging tail "resource.type=cloud_run_revision AND resource.labels.service_name=${SERVICE_NAME}" --format="value(text)"

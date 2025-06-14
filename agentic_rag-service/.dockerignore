@@ -1,0 +1,67 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv/
+.env/
+
+# Environment files
+.env
+.env.*
+
+# Git
+.git/
+.gitignore
+
+# Documentation
+*.md
+docs/
+ANALISIS_EXHAUSTIVO.md
+DEPLOYMENT.md
+
+# Development files
+*.log
+logs/
+test_runner.py
+run-tests.sh
+deploy-production.sh
+
+# Docker files
+Dockerfile.test
+docker-compose*.yml
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# macOS
+.DS_Store
+
+# Tests (opcional, solo si no necesitas tests en producción)
+tests/
+conftest.py
+pytest.ini
+requirements-dev.txt
+
+# Backups
+*.backup
+*.bak
+*~
+
+# Temporary files
+*.tmp
+*.temp
+temp/
+tmp/
