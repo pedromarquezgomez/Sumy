@@ -1,0 +1,26 @@
+# === CORE WEB FRAMEWORK ===
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+
+# === INTELIGENCIA ARTIFICIAL ===
+openai>=1.3.0
+
+# === VALIDACIÓN Y DATOS ===
+pydantic>=2.4.0
+
+# === CLIENTE HTTP (para servicios externos opcionales) ===
+httpx>=0.27.0
+
+# === CONFIGURACIÓN (desarrollo local) ===
+python-dotenv>=1.0.0
+
+# === TESTING (desarrollo) ===
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+httpx>=0.27.0  # Ya incluido arriba, pero necesario para tests
+pytest-cov>=4.1.0
+
+# === NOTA ===
+# sqlite3 viene incluido en Python
+# No necesitamos: chromadb, sentence-transformers, numpy, pandas, requests, structlog
+# Mantenemos solo lo esencial para un microservicio autónomo 
