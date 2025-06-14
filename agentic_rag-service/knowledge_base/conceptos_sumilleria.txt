@@ -1,0 +1,179 @@
+# Conceptos Básicos de Sumillería
+
+## Definición de Sumiller
+Un sumiller es un profesional especializado en vinos que posee conocimientos profundos sobre viticultura, enología, maridajes y servicio. Su función principal es asesorar sobre la selección, conservación y servicio de vinos.
+
+## Características Organolépticas del Vino
+
+### Vista
+- **Color**: Intensidad, matiz y evolución cromática
+- **Transparencia**: Claridad y brillantez
+- **Viscosidad**: Lágrimas o piernas del vino
+
+### Olfato
+- **Aromas primarios**: Procedentes de la uva (florales, frutales)
+- **Aromas secundarios**: De la fermentación (levaduras, lácteos)
+- **Aromas terciarios**: Del envejecimiento (especias, cuero, tabaco)
+
+### Gusto
+- **Dulzor**: Azúcares residuales
+- **Acidez**: Frescura y vivacidad
+- **Taninos**: Estructura y astringencia (en tintos)
+- **Alcohol**: Calidez y cuerpo
+- **Final**: Persistencia aromática
+
+## Tipos de Vino por Color
+
+### Vinos Tintos
+- Elaborados con uvas tintas
+- Maceración con hollejos
+- Temperatura de servicio: 16-18°C
+- Ejemplos: Tempranillo, Cabernet Sauvignon, Merlot
+
+### Vinos Blancos
+- Elaborados sin maceración con hollejos
+- Fermentación a temperatura controlada
+- Temperatura de servicio: 8-12°C
+- Ejemplos: Albariño, Chardonnay, Sauvignon Blanc
+
+### Vinos Rosados
+- Maceración corta con hollejos tintos
+- Color rosa pálido a salmón
+- Temperatura de servicio: 8-10°C
+- Ejemplos: Garnacha rosado, Tempranillo rosado
+
+### Vinos Espumosos
+- Segunda fermentación que produce CO2
+- Métodos: Tradicional, Charmat, Ancestral
+- Temperatura de servicio: 6-8°C
+- Ejemplos: Cava, Champagne, Prosecco
+
+## Clasificación por Dulzor
+
+### Vinos Secos
+- Azúcares residuales < 4 g/L
+- Fermentación completa de azúcares
+
+### Vinos Semisecos
+- Azúcares residuales 4-12 g/L
+- Ligero dulzor perceptible
+
+### Vinos Semidulces
+- Azúcares residuales 12-45 g/L
+- Dulzor evidente pero equilibrado
+
+### Vinos Dulces
+- Azúcares residuales > 45 g/L
+- Dulzor predominante
+
+## Regiones Vitivinícolas Españolas
+
+### Rioja
+- Variedades: Tempranillo, Garnacha, Mazuelo
+- Clasificación: Joven, Crianza, Reserva, Gran Reserva
+- Características: Elegancia, equilibrio, longevidad
+
+### Ribera del Duero
+- Variedad principal: Tempranillo (Tinto Fino)
+- Altitud elevada, clima continental
+- Vinos potentes y estructurados
+
+### Rías Baixas
+- Variedad principal: Albariño
+- Clima atlántico, suelos graníticos
+- Vinos blancos frescos y aromáticos
+
+### Priorat
+- Suelos de llicorella (pizarra)
+- Variedades: Garnacha, Cariñena
+- Vinos concentrados y minerales
+
+## Técnicas de Conservación
+
+### Temperatura
+- Vinos tintos: 12-16°C
+- Vinos blancos: 8-12°C
+- Evitar fluctuaciones térmicas
+
+### Humedad
+- Nivel óptimo: 70-80%
+- Previene secado de corchos
+- Evita formación de moho
+
+### Luz
+- Almacenamiento en oscuridad
+- La luz UV degrada el vino
+- Botellas de vidrio oscuro
+
+### Posición
+- Botellas horizontales
+- Contacto corcho-vino
+- Evita entrada de aire
+
+## Servicio del Vino
+
+### Orden de Servicio
+1. Blancos antes que tintos
+2. Jóvenes antes que añejos
+3. Secos antes que dulces
+4. Menos graduación antes que más
+
+### Copas Adecuadas
+- **Tintos**: Copa amplia, borde hacia dentro
+- **Blancos**: Copa más estrecha
+- **Espumosos**: Copa flauta o tulipán
+- **Dulces**: Copa pequeña
+
+### Decantación
+- Vinos tintos añejos con sedimento
+- Oxigenación de vinos jóvenes
+- Separación de sedimentos
+- Tiempo variable según vino
+
+## Maridajes Básicos
+
+### Principios Fundamentales
+- **Complementariedad**: Sabores que se complementan
+- **Contraste**: Sabores opuestos que se equilibran
+- **Intensidad**: Mismo nivel de potencia
+- **Regionalidad**: Productos de la misma zona
+
+### Maridajes Clásicos
+- **Pescados**: Vinos blancos frescos
+- **Carnes rojas**: Vinos tintos estructurados
+- **Quesos**: Según intensidad y tipo
+- **Postres**: Vinos dulces o espumosos
+
+## Defectos del Vino
+
+### Defectos Organolépticos
+- **Corcho**: Olor a moho, sabor amargo
+- **Oxidación**: Color parduzco, sabor plano
+- **Reducción**: Olores sulfurosos
+- **Avinagrado**: Exceso de acidez volátil
+
+### Causas Comunes
+- Mala conservación
+- Corchos defectuosos
+- Contaminación bacteriana
+- Exposición al aire
+
+## Vocabulario Técnico
+
+### Términos de Cata
+- **Astringente**: Sensación de sequedad
+- **Equilibrado**: Armonía entre componentes
+- **Persistente**: Duración de sabores
+- **Complejo**: Múltiples aromas y sabores
+
+### Términos de Elaboración
+- **Maceración**: Contacto mosto-hollejos
+- **Fermentación maloláctica**: Conversión ácido málico
+- **Crianza**: Envejecimiento en barrica/botella
+- **Coupage**: Mezcla de vinos
+
+## Referencias Profesionales
+- Consejo Regulador de cada D.O.
+- Guías de vinos especializadas
+- Cursos de sumillería certificados
+- Catas profesionales y concursos 

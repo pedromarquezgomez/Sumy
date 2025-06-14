@@ -1,0 +1,29 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Instalar dependencias del sistema
+RUN apt-get update && apt-get install -y \
+    gcc \
+    g++ \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copiar requirements y instalar dependencias Python
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copiar todos los archivos del proyecto
+COPY . .
+
+# Crear directorios necesarios
+RUN mkdir -p /app/data /app/knowledge_base /app/vector_db
+
+# Variables de entorno para testing
+ENV PYTHONPATH=/app
+ENV ENVIRONMENT=test
+ENV USE_EMBEDDED_CHROMA=true
+ENV OPENAI_API_KEY=test-key
+
+# Comando por defecto para tests
+CMD ["python", "-m", "pytest", "-v", "--tb=short"] 
