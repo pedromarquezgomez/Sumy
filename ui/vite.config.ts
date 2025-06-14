@@ -10,13 +10,18 @@ export default defineConfig({
     cors: true,
     proxy: {
       '/api': {
-        target: 'https://sumiller-service-651407942803.europe-west1.run.app',
+        target: 'https://sumiller-service-597742621765.europe-west1.run.app',
         changeOrigin: true,
         secure: true,
+        timeout: 60000, // 60 segundos timeout
+        proxyTimeout: 60000, // 60 segundos proxy timeout
         rewrite: (path) => path.replace(/^\/api/, ''),
         configure: (proxy, options) => {
           proxy.on('proxyReq', (proxyReq, req, res) => {
             console.log('Proxy request to:', options.target + req.url);
+          });
+          proxy.on('error', (err, req, res) => {
+            console.error('Proxy error:', err);
           });
         }
       }

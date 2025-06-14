@@ -40,6 +40,8 @@ CATEGORÍAS DISPONIBLES:
    • Procesos de elaboración del vino
    • Temperaturas de servicio
    • Historia del vino
+   • Principios y técnicas de maridaje (¿cómo maridar?, ¿qué reglas seguir?)
+   • Conceptos teóricos sobre armonía vino-comida
 
 👋 GREETING - Saludos y conversación general:
    • Saludos, presentaciones
@@ -77,6 +79,9 @@ Consulta: "Recomienda un vino tinto para carne"
 
 Consulta: "¿Qué son los taninos?"
 {"category": "WINE_THEORY", "confidence": 0.90, "reasoning": "Pregunta conceptual sobre sumillería"}
+
+Consulta: "¿Qué principios básicos debo seguir para maridar vinos?"
+{"category": "WINE_THEORY", "confidence": 0.85, "reasoning": "Consulta teórica sobre principios de maridaje"}
 
 Consulta: "Hola, ¿qué tal?"
 {"category": "GREETING", "confidence": 0.85, "reasoning": "Saludo general"}
@@ -154,13 +159,18 @@ RESPONDE SOLO EL JSON, SIN TEXTO ADICIONAL."""
         wine_search_keywords = {
             'recomienda', 'recomendación', 'quiero', 'busco', 'precio', 'barato', 
             'caro', 'económico', 'regalo', 'cena', 'comida', 'maridaje', 'maridar',
-            'para', 'con', 'mejor', 'bueno', 'rioja', 'ribera', 'tempranillo'
+            'para', 'con', 'mejor', 'bueno', 'rioja', 'ribera', 'tempranillo',
+            'pescado', 'carne', 'pollo', 'cordero', 'queso', 'mariscos', 'paella',
+            'pasta', 'ensalada', 'postre', 'aperitivo', 'asado', 'guiso', 'sushi'
         }
         
         wine_theory_keywords = {
             'qué es', 'qué son', 'explica', 'diferencia', 'cómo', 'por qué',
             'taninos', 'acidez', 'cuerpo', 'aroma', 'cata', 'servir', 'temperatura',
-            'conservar', 'decantación', 'crianza', 'reserva', 'denominación'
+            'conservar', 'decantación', 'crianza', 'reserva', 'denominación',
+            'principios', 'conceptos', 'fundamentos', 'técnicas', 'reglas',
+            'teoría', 'aprender', 'enseña', 'conocimiento', 'básicos',
+            'maridaje', 'maridar'
         }
         
         greeting_keywords = {

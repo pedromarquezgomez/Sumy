@@ -137,12 +137,19 @@ const saveUserToFirestore = async (userData) => {
 
 const saveConversationToFirestore = async (question, answer) => {
   if (!user.value) return;
+  
+  // Validar que answer no sea undefined o null
+  if (!answer || answer === undefined || answer === null) {
+    console.warn("No se puede guardar conversación: respuesta vacía o undefined");
+    return;
+  }
+  
   try {
     await addDoc(collection(db, 'conversations'), {
-            userId: user.value.uid,
-      userName: user.value.displayName,
-      question: question,
-      answer: answer,
+      userId: user.value.uid,
+      userName: user.value.displayName || 'Usuario',
+      question: question || '',
+      answer: String(answer), // Asegurar que sea string
       createdAt: serverTimestamp()
     });
   } catch (err) {
@@ -160,7 +167,7 @@ const saveConversationToFirestore = async (question, answer) => {
         messages.value.push({
           id: Date.now(),
           role: 'bot',
-          text: `Saludos, ${currentUser.displayName}. Soy Sumi, su Sumiller Digital. ¿Qué vino desea explorar hoy?`
+          text: `Saludos, ${currentUser.displayName}. Soy Sumy, su Sumiller Digital. ¿En Qué puedo ayudarle?`
         })
       }
     }
@@ -198,17 +205,23 @@ const sendMessage = async () => {
 
   try {
     const token = await user.value.getIdToken()
-    // Forzar uso de proxy en todas las configuraciones
-    const apiUrl = '/api/query'
+    // Usar URL directa en producción, proxy en desarrollo
+    const apiUrl = import.meta.env.DEV 
+      ? '/api/query' 
+      : 'https://sumiller-service-597742621765.europe-west1.run.app/query'
 
     const result = await axios.post(apiUrl, { 
-      prompt: query,
+      query: query,
       user_id: user.value.uid || 'anonymous_user'
     }, {
       headers: { 'Authorization': `Bearer ${token}` }
     })
     
-    const botResponse = result.data.response;
+    const botResponse = result.data?.response || 'Lo siento, no pude procesar tu consulta correctamente.';
+    
+    // Debug logging
+    console.log('API Response:', result.data);
+    console.log('Bot Response:', botResponse);
 
     // Procesar respuesta estructurada del sumiller
     const structuredMessages = parseStructuredResponse(botResponse);
