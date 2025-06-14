@@ -1,4 +1,234 @@
-# ===== PYTHON =====
+# ===== NODE.JS =====
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# ===== VITE =====
+dist/
+dist-ssr/
+*.local
+
+# ===== TYPESCRIPT =====
+*.tsbuildinfo
+
+# ===== LOGS =====
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# ===== RUNTIME DATA =====
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# ===== COVERAGE DIRECTORY USED BY TOOLS LIKE ISTANBUL =====
+lib-cov/
+coverage/
+*.lcov
+.nyc_output/
+
+# ===== GRUNT INTERMEDIATE STORAGE =====
+.grunt/
+
+# ===== BOWER DEPENDENCY DIRECTORY =====
+bower_components/
+
+# ===== NODE-WAF CONFIGURATION =====
+.lock-wscript
+
+# ===== COMPILED BINARY ADDONS =====
+build/Release/
+
+# ===== DEPENDENCY DIRECTORIES =====
+node_modules/
+jspm_packages/
+
+# ===== SNOWPACK DEPENDENCY DIRECTORY =====
+web_modules/
+
+# ===== TYPESCRIPT CACHE =====
+*.tsbuildinfo
+
+# ===== OPTIONAL NPM CACHE DIRECTORY =====
+.npm/
+
+# ===== OPTIONAL ESLINT CACHE =====
+.eslintcache
+
+# ===== MICROBUNDLE CACHE =====
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+
+# ===== OPTIONAL REPL HISTORY =====
+.node_repl_history
+
+# ===== OUTPUT OF 'NPM PACK' =====
+*.tgz
+
+# ===== YARN INTEGRITY FILE =====
+.yarn-integrity
+
+# ===== ENVIRONMENT VARIABLES =====
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.staging
+
+# ===== PARCEL-BUNDLER CACHE =====
+.cache/
+.parcel-cache/
+
+# ===== NEXT.JS BUILD OUTPUT =====
+.next/
+out/
+
+# ===== NUXT.JS BUILD / GENERATE OUTPUT =====
+.nuxt/
+dist/
+
+# ===== GATSBY FILES =====
+.cache/
+public/
+
+# ===== VUE.JS =====
+.DS_Store
+node_modules/
+dist/
+
+# ===== VUEPRESS BUILD OUTPUT =====
+.vuepress/dist/
+
+# ===== SERVERLESS DIRECTORIES =====
+.serverless/
+
+# ===== FUSEBOX CACHE =====
+.fusebox/
+
+# ===== DYNAMODB LOCAL FILES =====
+.dynamodb/
+
+# ===== TERNJS PORT FILE =====
+.tern-port
+
+# ===== FIREBASE =====
+.firebase/
+firebase-debug.log*
+firebase-debug.*.log*
+.firebaserc.local
+
+# ===== FIREBASE HOSTING =====
+.firebase/hosting.*
+
+# ===== FIREBASE FUNCTIONS =====
+functions/node_modules/
+functions/.env
+functions/.env.local
+
+# ===== FIREBASE EMULATOR =====
+firebase-debug.log
+ui-debug.log
+firestore-debug.log
+database-debug.log
+pubsub-debug.log
+
+# ===== TAILWINDCSS =====
+tailwind.config.js.backup
+
+# ===== VITE SPECIFIC =====
+# Vite build outputs
+dist/
+dist-ssr/
+# Vite cache
+.vite/
+# Vite temp files
+vite.config.*.timestamp-*
+
+# ===== TESTING =====
+coverage/
+.nyc_output/
+.jest/
+test-results/
+playwright-report/
+test-results/
+playwright/.cache/
+
+# ===== STORYBOOK =====
+storybook-static/
+
+# ===== CYPRESS =====
+cypress/videos/
+cypress/screenshots/
+cypress/downloads/
+
+# ===== VITEST =====
+coverage/
+
+# ===== EDITOR DIRECTORIES AND FILES =====
+.vscode/
+!.vscode/extensions.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*~
+
+# ===== OS GENERATED FILES =====
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# ===== TEMPORARY FILES =====
+*.tmp
+*.temp
+temp/
+tmp/
+*.backup
+*.bak
+*_backup.*
+
+# ===== PACKAGE MANAGERS =====
+# Yarn
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+.pnp.*
+
+# ===== DEPLOYMENT =====
+.vercel/
+.netlify/
+
+# ===== LOCAL DEVELOPMENT =====
+.local/
+*.local
+
+# ===== SENTRY =====
+.sentryclirc
+
+# ===== DOCKER =====
+.dockerignore
+
+# ===== PYTHON (SI HAY SCRIPTS DE BUILD) =====
 __pycache__/
 *.py[cod]
 *$py.class
@@ -20,6 +250,28 @@ wheels/
 .installed.cfg
 *.egg
 
+# ===== SUMILLER SPECIFIC =====
+# Logs específicos del sumiller
+sumiller.log
+api.log
+query.log
+recommendations.log
+
+# Cache de recomendaciones
+recommendations_cache/
+wine_cache/
+user_sessions/
+
+# Datos temporales
+*.wine_temp
+*.session
+*.recommendations
+
+# Configuraciones locales
+config.local.js
+config.local.ts
+sumiller.local.conf
+
 # ===== ENTORNOS VIRTUALES =====
 venv/
 env/
@@ -28,18 +280,10 @@ ENV/
 .env/
 
 # ===== VARIABLES DE ENTORNO =====
-.env
 .env.local
 .env.production
 .env.test
 .env.sumiller
-
-# ===== LOGS =====
-*.log
-sumiller.log
-api.log
-query.log
-recommendations.log
 
 # ===== MEMORIA Y CACHE =====
 memory_cache/
@@ -59,17 +303,11 @@ processed_queries/
 recommendations_temp/
 temp_queries/
 *.recommendations
-recommendations_cache/
 
 # ===== DATOS DE VINOS =====
 wine_data/temp/
-wine_cache/
-*.wine_temp
-wine_embeddings/
-wine_vectors/
 
 # ===== SESIONES DE USUARIO =====
-user_sessions/
 preferences/
 *.session
 user_data/
@@ -109,7 +347,6 @@ main copy.py.bak
 
 # ===== CONFIGURACIONES LOCALES =====
 config.local.py
-sumiller.local.conf
 settings.local.py
 
 # ===== IDEs =====
