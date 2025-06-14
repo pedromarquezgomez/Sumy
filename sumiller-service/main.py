@@ -558,16 +558,31 @@ async def sumiller_query_with_filter(request: QueryRequest = Body(...)):
             if rag_response.get("sources") and not rag_response.get("error"):
                 # Convertir fuentes RAG a formato wines_recommended
                 wines_recommended = []
-                for src in rag_response["sources"]:
+                logger.info(f"🍇 Procesando {len(rag_response['sources'])} fuentes RAG...")
+                
+                for i, src in enumerate(rag_response["sources"]):
+                    logger.info(f"🔍 Fuente {i+1}: {src.get('metadata', {})}")
+                    
                     if src.get("metadata", {}).get("type") == "wine":
                         wine_data = src["metadata"].copy()
                         wine_data["relevance_score"] = src.get("relevance_score", 0)
-                        # Extraer descripción del contenido
+                        
+                        # Extraer descripción del contenido - mejorado
                         content = src.get("content", "")
                         if "Descripción: " in content:
                             description = content.split("Descripción: ")[1].split("\n")[0]
                             wine_data["description"] = description
+                        elif content:
+                            # Si no hay "Descripción:", usar las primeras líneas del contenido
+                            lines = content.split("\n")
+                            description_lines = [line for line in lines if line.strip() and not line.startswith("Vino:")]
+                            if description_lines:
+                                wine_data["description"] = description_lines[0][:200]
+                        
                         wines_recommended.append(wine_data)
+                        logger.info(f"✅ Vino añadido: {wine_data.get('name', 'Unknown')}")
+                
+                logger.info(f"🍷 Total vinos encontrados: {len(wines_recommended)}")
                 used_rag = True
                 
                 response_text = await generate_sumiller_response(
