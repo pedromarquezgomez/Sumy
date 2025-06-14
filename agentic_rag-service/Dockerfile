@@ -4,32 +4,21 @@ WORKDIR /app
 
 # Instalar dependencias del sistema
 RUN apt-get update && apt-get install -y \
-    gcc \
-    g++ \
-    curl \
+    build-essential \
     && rm -rf /var/lib/apt/lists/*
 
-# Copiar requirements y instalar dependencias Python
+# Copiar requirements primero para aprovechar la caché de Docker
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copiar archivos del proyecto
-COPY main.py .
+# Copiar el código
+COPY . .
 
-# Crear directorios necesarios
-RUN mkdir -p /app/data /app/knowledge_base /app/vector_db
+# Crear directorio para la base de conocimiento
+RUN mkdir -p /app/knowledge_base
 
-# Exponer puerto
-EXPOSE 8080
+# Exponer el puerto
+EXPOSE 8000
 
-# Variables de entorno
-ENV PYTHONPATH=/app
-ENV ENVIRONMENT=production
-ENV USE_EMBEDDED_CHROMA=true
-
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:8080/health || exit 1
-
-# Comando por defecto
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"] 
+# Comando para iniciar el servicio
+CMD ["python", "main.py", "http"] 
