@@ -10,9 +10,15 @@ export default defineConfig({
     cors: true,
     proxy: {
       '/api': {
-        target: 'http://localhost:8001',
+        target: 'https://sumiller-service-651407942803.europe-west1.run.app',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, '')
+        secure: true,
+        rewrite: (path) => path.replace(/^\/api/, ''),
+        configure: (proxy, options) => {
+          proxy.on('proxyReq', (proxyReq, req, res) => {
+            console.log('Proxy request to:', options.target + req.url);
+          });
+        }
       }
     }
   }
