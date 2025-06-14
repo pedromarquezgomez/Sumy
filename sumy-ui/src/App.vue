@@ -202,10 +202,14 @@ const sendMessage = async () => {
     const apiUrl = '/api/query'
 
     const result = await axios.post(apiUrl, { 
-      prompt: query,
-      user_id: user.value.uid || 'anonymous_user'
+      query: query,
+      user_id: user.value.uid || 'anonymous_user',
+      session_id: Date.now().toString()
     }, {
-      headers: { 'Authorization': `Bearer ${token}` }
+      headers: { 
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
     })
     
     const botResponse = result.data.response;
