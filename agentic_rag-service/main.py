@@ -230,29 +230,98 @@ class AgenticRAGEngine:
     async def generate_answer(self, query: str, sources: List[Dict[str, Any]], context: Dict[str, Any] = None) -> str:
         """Generar respuesta usando LLM con fuentes recuperadas"""
         if not self.openai_client:
-            # Fallback sin LLM
-            return f"Basado en {len(sources)} fuentes encontradas para: '{query}'"
+            # Fallback sin LLM - MÁS COMPLETO
+            if not sources:
+                return f"No encontré información específica para: '{query}'"
+            
+            response = f"📚 **Información encontrada para: '{query}'**\n\n"
+            
+            for i, source in enumerate(sources[:3], 1):
+                content = source.get('content', '')
+                metadata = source.get('metadata', {})
+                relevance = source.get('relevance_score', 0)
+                
+                if metadata.get('type') == 'vino':
+                    response += f"**{i}. {metadata.get('name', 'Vino')}** (relevancia: {relevance:.2f})\n"
+                    if metadata.get('wine_type'):
+                        response += f"   • Tipo: {metadata.get('wine_type')}\n"
+                    if metadata.get('region'):
+                        response += f"   • Región: {metadata.get('region')}\n"
+                    if metadata.get('price'):
+                        response += f"   • Precio: {metadata.get('price')}€\n"
+                    if metadata.get('pairing'):
+                        response += f"   • Maridaje: {metadata.get('pairing')}\n"
+                    response += f"   • Descripción: {content[:300]}{'...' if len(content) > 300 else ''}\n\n"
+                else:
+                    response += f"**Información {i}:**\n"
+                    response += f"{content[:400]}{'...' if len(content) > 400 else ''}\n\n"
+            
+            return response
         
         try:
             # Construir contexto de fuentes
             sources_text = "\n\n".join([
                 f"Fuente {i+1} (relevancia: {source.get('relevance_score', 0):.2f}):\n{source['content']}"
-                for i, source in enumerate(sources[:3])  # Máximo 3 fuentes
+                for i, source in enumerate(sources[:5])  # Aumentado a 5 fuentes
             ])
             
-            system_prompt = """Eres un asistente inteligente que responde preguntas basándose en fuentes proporcionadas.
-            Usa SOLAMENTE la información de las fuentes para responder. Si la información no está en las fuentes, dilo claramente.
-            Cita las fuentes relevantes en tu respuesta."""
+            # Determinar el tipo de consulta para ajustar el prompt
+            query_lower = query.lower()
+            is_wine_recommendation = any(word in query_lower for word in [
+                'recomienda', 'recomendación', 'vino para', 'qué vino', 'mejor vino',
+                'busco', 'quiero', 'necesito', 'maridaje', 'acompañar'
+            ])
+            
+            if is_wine_recommendation:
+                system_prompt = """Eres un sumiller experto especializado en recomendaciones de vinos. Tu objetivo es proporcionar recomendaciones detalladas y útiles.
+
+ESTILO DE RESPUESTA:
+- Proporciona recomendaciones específicas y detalladas
+- Explica las características organolépticas relevantes
+- Incluye información sobre maridajes y ocasiones de consumo
+- Menciona detalles sobre precio, región y productor
+- Añade consejos de servicio cuando sea apropiado
+- Sé profesional pero accesible y entusiasta
+
+ESTRUCTURA RECOMENDADA:
+1. Introducción breve contextualizando la consulta
+2. Recomendaciones específicas (1-3 vinos principales)
+3. Detalles de cada vino (características, precio, región)
+4. Explicación de por qué es adecuado para la consulta
+5. Consejos adicionales de servicio o maridaje"""
+            else:
+                system_prompt = """Eres un sumiller experto con amplio conocimiento en enología, viticultura y cultura del vino. Tu objetivo es educar y proporcionar información completa y precisa.
+
+ESTILO DE RESPUESTA:
+- Proporciona explicaciones claras y completas
+- Incluye contexto técnico e histórico relevante
+- Usa ejemplos prácticos para ilustrar conceptos
+- Conecta la teoría con la práctica
+- Sé didáctico pero no condescendiente
+- Incluye consejos prácticos aplicables
+
+ESTRUCTURA RECOMENDADA:
+1. Explicación del concepto o respuesta principal
+2. Detalles técnicos y contexto relevante
+3. Ejemplos prácticos o casos de uso
+4. Consejos para la aplicación práctica
+5. Información adicional o recomendaciones relacionadas"""
             
             user_prompt = f"""
-            Pregunta: {query}
+            Consulta: {query}
             
-            Contexto adicional: {json.dumps(context or {}, indent=2)}
-            
-            Fuentes disponibles:
+            Información disponible de mi base de conocimientos:
             {sources_text}
             
-            Responde la pregunta basándote únicamente en las fuentes proporcionadas.
+            Contexto adicional: {context if context else 'No hay contexto adicional'}
+            
+            INSTRUCCIONES:
+            - Usa SOLO la información de las fuentes proporcionadas
+            - Proporciona una respuesta completa y profesional
+            - Si es una recomendación de vinos, incluye detalles específicos de los vinos encontrados
+            - Si es una consulta teórica, explica conceptos de manera clara y completa
+            - Incluye consejos prácticos cuando sea relevante
+            - Mantén un tono profesional pero accesible
             """
             
             response = self.openai_client.chat.completions.create(
@@ -262,14 +331,37 @@ class AgenticRAGEngine:
                     {"role": "user", "content": user_prompt}
                 ],
                 temperature=0.3,
-                max_tokens=1000
+                max_tokens=800  # Aumentado significativamente para respuestas más completas
             )
             
             return response.choices[0].message.content
             
         except Exception as e:
             logger.error(f"Error generando respuesta: {e}")
-            return f"Error generando respuesta basada en {len(sources)} fuentes para: '{query}'"
+            # Fallback mejorado en caso de error
+            if sources:
+                response = f"📚 **Información encontrada para: '{query}'** (Error en generación IA)\n\n"
+                
+                for i, source in enumerate(sources[:3], 1):
+                    content = source.get('content', '')
+                    metadata = source.get('metadata', {})
+                    
+                    if metadata.get('type') == 'vino':
+                        response += f"**{i}. {metadata.get('name', 'Vino')}**\n"
+                        if metadata.get('wine_type'):
+                            response += f"   • Tipo: {metadata.get('wine_type')}\n"
+                        if metadata.get('region'):
+                            response += f"   • Región: {metadata.get('region')}\n"
+                        if metadata.get('price'):
+                            response += f"   • Precio: {metadata.get('price')}€\n"
+                        response += f"   • Información: {content[:250]}{'...' if len(content) > 250 else ''}\n\n"
+                    else:
+                        response += f"**Información {i}:**\n"
+                        response += f"{content[:300]}{'...' if len(content) > 300 else ''}\n\n"
+                
+                return response
+            else:
+                return f"Error generando respuesta basada en {len(sources)} fuentes para: '{query}'"
     
     async def agentic_rag_query(self, query: str, context: Dict[str, Any] = None, max_results: int = 5) -> RAGResponse:
         """Consulta RAG agéntica completa"""

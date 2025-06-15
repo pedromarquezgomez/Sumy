@@ -243,64 +243,36 @@ async def generate_sumiller_response(
     """Generar respuesta del sumiller usando OpenAI."""
     
     if not openai_client:
-        # Respuesta fallback sin IA - contextual e inteligente
+        # Respuesta fallback sin IA - MÁS COMPLETA
         if wines:
-            # Analizar la consulta para dar contexto
-            query_lower = query.lower()
-            context_intro = ""
+            # Seleccionar los mejores vinos (hasta 3)
+            top_wines = wines[:3]
+            response = "🍷 **Recomendaciones de vinos:**\n\n"
             
-            if any(word in query_lower for word in ["pescado", "mariscos", "marisco"]):
-                context_intro = "Para pescados y mariscos, te recomiendo estos vinos que maridan perfectamente:"
-            elif any(word in query_lower for word in ["carne", "cordero", "ternera"]):
-                context_intro = "Para carnes, estos vinos son ideales:"
-            elif any(word in query_lower for word in ["queso", "quesos"]):
-                context_intro = "Para acompañar quesos, te sugiero:"
-            elif any(word in query_lower for word in ["blanco", "blancos"]):
-                context_intro = "Aquí tienes excelentes vinos blancos:"
-            elif any(word in query_lower for word in ["tinto", "tintos"]):
-                context_intro = "Te recomiendo estos vinos tintos:"
-            elif any(word in query_lower for word in ["rosado", "rosados"]):
-                context_intro = "Estos vinos rosados son perfectos:"
-            else:
-                context_intro = "Basándome en tu consulta, te recomiendo estos vinos:"
-            
-            response_parts = [context_intro + "\n"]
-            
-            for i, wine in enumerate(wines[:3], 1):
+            for i, wine in enumerate(top_wines, 1):
                 name = wine.get("name", "Vino")
                 price = wine.get("price", "N/A")
                 region = wine.get("region", "")
-                description = wine.get("description", "")
                 wine_type = wine.get("type", "")
+                description = wine.get("description", "")
+                pairing = wine.get("pairing", "")
                 
-                wine_info = f"🍷 **{name}**"
+                response += f"**{i}. {name}**\n"
+                if wine_type:
+                    response += f"   • Tipo: {wine_type}\n"
                 if region:
-                    wine_info += f" - {region}"
+                    response += f"   • Región: {region}\n"
                 if price != "N/A":
-                    wine_info += f" ({price}€)"
-                
+                    response += f"   • Precio: {price}€\n"
                 if description:
-                    # Extraer información clave de la descripción
-                    desc_short = description[:120] + "..." if len(description) > 120 else description
-                    wine_info += f"\n   {desc_short}"
-                
-                response_parts.append(wine_info)
+                    response += f"   • Descripción: {description[:150]}{'...' if len(description) > 150 else ''}\n"
+                if pairing:
+                    response += f"   • Maridaje: {pairing}\n"
+                response += "\n"
             
-            # Agregar consejo adicional basado en el tipo de consulta
-            if "pescado" in query_lower or "mariscos" in query_lower:
-                response_parts.append("\n💡 Consejo: Sirve estos vinos bien fríos (6-10°C) para realzar su frescura.")
-            elif "carne" in query_lower:
-                response_parts.append("\n💡 Consejo: Deja que los vinos tintos respiren unos minutos antes de servir.")
-            
-            # Agregar análisis de maridaje específico
-            if "pescado" in query_lower or "mariscos" in query_lower:
-                response_parts.append("\n🐟 **Análisis de maridaje**: Los vinos blancos y finos complementan perfectamente la delicadeza del pescado, mientras que su acidez equilibra los sabores marinos.")
-            elif "carne" in query_lower:
-                response_parts.append("\n🥩 **Análisis de maridaje**: Los vinos tintos con estructura y taninos suaves realzan los sabores de la carne sin dominarla.")
-            
-            return "\n\n".join(response_parts)
+            return response
         else:
-            return "No encontré vinos específicos para tu consulta, pero puedo ayudarte con recomendaciones generales. ¿Podrías ser más específico sobre qué tipo de vino buscas?"
+            return "No encontré vinos específicos para tu consulta. ¿Podrías darme más detalles sobre qué tipo de vino buscas? Por ejemplo: color, región, ocasión o presupuesto."
     
     try:
         # Contexto del usuario
@@ -310,39 +282,64 @@ async def generate_sumiller_response(
         
         if user_context.get("preferences"):
             prefs = user_context["preferences"]
-            context_info += f"\nPreferencias: {json.dumps(prefs, ensure_ascii=False)}"
+            context_info += f"\nPreferencias del usuario: {json.dumps(prefs, ensure_ascii=False)}"
         
-        # Prompt según categoría
+        # Prompt según categoría - MÁS DETALLADO
         if category == "WINE_SEARCH":
-            system_prompt = """Eres Sumy, un sumiller profesional experto. Responde de manera amigable y profesional.
-            
-Basándote en los vinos encontrados y el contexto del usuario, proporciona recomendaciones específicas y útiles.
-Incluye detalles sobre maridajes, temperaturas de servicio y por qué recomiendas cada vino."""
+            system_prompt = """Eres Sumy, un sumiller experto y apasionado. Tu objetivo es proporcionar recomendaciones de vinos detalladas y útiles.
+
+ESTILO DE RESPUESTA:
+- Sé profesional pero cercano y entusiasta
+- Proporciona información completa y práctica
+- Incluye detalles sobre características organolépticas cuando sea relevante
+- Explica por qué recomiendas cada vino
+- Añade consejos de servicio o maridaje cuando sea apropiado
+- Usa emojis ocasionalmente para hacer la respuesta más amigable
+
+ESTRUCTURA RECOMENDADA:
+1. Saludo breve y contextualización
+2. Recomendaciones específicas (1-3 vinos)
+3. Detalles de cada vino (nombre, precio, región, características)
+4. Razones de la recomendación
+5. Consejos adicionales si es relevante"""
             
             wines_info = json.dumps(wines, indent=2, ensure_ascii=False) if wines else "No se encontraron vinos específicos"
-            user_content = f"""Consulta: "{query}"
+            user_content = f"""Consulta del cliente: "{query}"
 
-Vinos encontrados:
+Vinos disponibles en nuestra carta:
 {wines_info}
 
 {context_info}
 
-Proporciona una recomendación profesional y personalizada."""
+Proporciona una recomendación completa y profesional como sumiller experto. Incluye detalles sobre las características de los vinos, por qué los recomiendas para esta consulta específica, y cualquier consejo adicional que pueda ser útil."""
 
         elif category == "WINE_THEORY":
-            system_prompt = """Eres Sumy, un sumiller profesional experto en teoría y técnicas de sumillería.
+            system_prompt = """Eres Sumy, un sumiller experto con amplio conocimiento en enología y viticultura. Tu objetivo es educar y compartir conocimiento de manera clara y completa.
+
+ESTILO DE RESPUESTA:
+- Proporciona explicaciones claras y completas
+- Usa ejemplos prácticos cuando sea posible
+- Incluye contexto histórico o técnico relevante
+- Conecta la teoría con la práctica
+- Sé didáctico pero no condescendiente
+- Incluye consejos prácticos para aplicar el conocimiento
+
+ESTRUCTURA RECOMENDADA:
+1. Explicación del concepto principal
+2. Detalles técnicos relevantes
+3. Ejemplos prácticos o casos de uso
+4. Consejos para la aplicación práctica
+5. Recomendaciones adicionales si es apropiado"""
             
-Explica conceptos de manera clara y educativa, con ejemplos prácticos cuando sea apropiado."""
-            
-            user_content = f"""Consulta sobre teoría de vinos: "{query}"
+            user_content = f"""Consulta sobre enología/viticultura: "{query}"
 
 {context_info}
 
-Proporciona una explicación clara y profesional."""
+Proporciona una explicación completa y educativa como sumiller experto. Incluye tanto aspectos técnicos como prácticos, y conecta la información con experiencias reales de cata o servicio."""
         
         else:
-            # Para otras categorías, usar respuesta predefinida
-            return CATEGORY_RESPONSES.get(category, "Como sumiller, me especializo en vinos. ¿En qué puedo ayudarte?")
+            # Para otras categorías, usar respuesta predefinida pero más completa
+            return CATEGORY_RESPONSES.get(category, "Como sumiller profesional, me especializo en el mundo del vino. Puedo ayudarte con recomendaciones de vinos, maridajes, técnicas de cata, información sobre regiones vitivinícolas, y mucho más. ¿En qué aspecto del vino te gustaría que te asesore?")
         
         response = await openai_client.chat.completions.create(
             model=OPENAI_MODEL,
@@ -351,66 +348,54 @@ Proporciona una explicación clara y profesional."""
                 {"role": "user", "content": user_content}
             ],
             temperature=0.7,
-            max_tokens=200  # Reducir para evitar timeouts
+            max_tokens=800  # Aumentado significativamente para respuestas más completas
         )
         
         return response.choices[0].message.content.strip()
         
     except Exception as e:
         logger.error(f"Error generando respuesta IA: {e}")
-        # Fallback inteligente - usar la misma lógica que cuando no hay openai_client
+        # Fallback inteligente - MÁS COMPLETO
         if wines:
-            # Analizar la consulta para dar contexto
-            query_lower = query.lower()
-            context_intro = ""
+            top_wines = wines[:3]
+            response = "🍷 **Recomendaciones basadas en tu consulta:**\n\n"
             
-            if any(word in query_lower for word in ["pescado", "mariscos", "marisco"]):
-                context_intro = "Para pescados y mariscos, te recomiendo estos vinos que maridan perfectamente:"
-            elif any(word in query_lower for word in ["carne", "cordero", "ternera"]):
-                context_intro = "Para carnes, estos vinos son ideales:"
-            elif any(word in query_lower for word in ["queso", "quesos"]):
-                context_intro = "Para acompañar quesos, te sugiero:"
-            elif any(word in query_lower for word in ["blanco", "blancos"]):
-                context_intro = "Aquí tienes excelentes vinos blancos:"
-            elif any(word in query_lower for word in ["tinto", "tintos"]):
-                context_intro = "Te recomiendo estos vinos tintos:"
-            elif any(word in query_lower for word in ["rosado", "rosados"]):
-                context_intro = "Estos vinos rosados son perfectos:"
-            else:
-                context_intro = "Basándome en tu consulta, te recomiendo estos vinos:"
-            
-            response_parts = [context_intro + "\n"]
-            
-            for i, wine in enumerate(wines[:3], 1):
+            for i, wine in enumerate(top_wines, 1):
                 name = wine.get("name", "Vino")
                 price = wine.get("price", "N/A")
                 region = wine.get("region", "")
+                wine_type = wine.get("type", "")
                 description = wine.get("description", "")
                 
-                wine_info = f"🍷 **{name}**"
+                response += f"**{i}. {name}**\n"
+                if wine_type:
+                    response += f"   • Tipo: {wine_type}\n"
                 if region:
-                    wine_info += f" - {region}"
+                    response += f"   • Región: {region}\n"
                 if price != "N/A":
-                    wine_info += f" ({price}€)"
-                
+                    response += f"   • Precio: {price}€\n"
                 if description:
-                    # Extraer información clave de la descripción
-                    desc_short = description[:120] + "..." if len(description) > 120 else description
-                    wine_info += f"\n   {desc_short}"
+                    response += f"   • Características: {description[:200]}{'...' if len(description) > 200 else ''}\n"
                 
-                response_parts.append(wine_info)
+                # Añadir razón específica basada en la consulta
+                query_lower = query.lower()
+                if any(word in query_lower for word in ["pescado", "mariscos", "sushi"]):
+                    response += f"   • ¿Por qué te lo recomiendo?: Ideal para pescados y mariscos por su frescura y acidez equilibrada\n"
+                elif any(word in query_lower for word in ["carne", "cordero", "ternera", "asado"]):
+                    response += f"   • ¿Por qué te lo recomiendo?: Perfecto para carnes por su estructura tánica y cuerpo\n"
+                elif any(word in query_lower for word in ["queso", "tabla"]):
+                    response += f"   • ¿Por qué te lo recomiendo?: Excelente con quesos por su equilibrio y complejidad\n"
+                else:
+                    response += f"   • ¿Por qué te lo recomiendo?: Recomendado por su excelente relación calidad-precio y versatilidad\n"
+                
+                response += "\n"
             
-            # Agregar consejo adicional basado en el tipo de consulta
-            if "pescado" in query_lower or "mariscos" in query_lower:
-                response_parts.append("\n💡 Consejo: Sirve estos vinos bien fríos (6-10°C) para realzar su frescura.")
-            elif "carne" in query_lower:
-                response_parts.append("\n💡 Consejo: Deja que los vinos tintos respiren unos minutos antes de servir.")
-            
-            return "\n\n".join(response_parts)
+            response += "💡 **Consejo del sumiller**: Sirve a la temperatura adecuada y considera decantar si es un tinto con cuerpo para potenciar sus aromas."
+            return response
         else:
-            return "Como sumiller, puedo ayudarte con recomendaciones de vinos. ¿Qué tipo de vino buscas?"
+            return "No encontré vinos específicos para tu consulta, pero estaré encantado de ayudarte. ¿Podrías contarme más detalles? Por ejemplo: ¿qué tipo de vino prefieres (tinto, blanco, rosado)?, ¿para qué ocasión?, ¿tienes algún presupuesto en mente?, ¿hay alguna región que te interese especialmente?"
 
-# ✨ NUEVA FUNCIÓN: Generar respuesta del sumiller usando RAG + IA
+# ✨ FUNCIÓN MEJORADA: Generar respuesta del sumiller usando RAG + IA
 async def generate_sumiller_response_with_rag(
     query: str, 
     rag_response: Dict[str, Any], 
@@ -420,15 +405,28 @@ async def generate_sumiller_response_with_rag(
     """Generar respuesta del sumiller combinando RAG con OpenAI."""
     
     if not openai_client:
-        # Respuesta fallback usando solo RAG
+        # Respuesta fallback usando solo RAG - MÁS COMPLETA
         if rag_response.get("answer"):
             return rag_response["answer"]
         elif rag_response.get("sources"):
-            sources_text = "\n".join([src.get("content", "")[:200] + "..." 
-                                    for src in rag_response["sources"][:2]])
-            return f"Basándome en mi conocimiento: {sources_text}"
+            response = "📚 **Basándome en mi conocimiento especializado:**\n\n"
+            
+            for i, source in enumerate(rag_response["sources"][:3], 1):
+                content = source.get("content", "")
+                metadata = source.get("metadata", {})
+                
+                if metadata.get("type") == "vino":
+                    response += f"**{i}. {metadata.get('name', 'Vino')}**\n"
+                    response += f"   • Región: {metadata.get('region', 'N/A')}\n"
+                    response += f"   • Precio: {metadata.get('price', 'N/A')}€\n"
+                    response += f"   • Características: {content[:300]}{'...' if len(content) > 300 else ''}\n\n"
+                else:
+                    response += f"**Información relevante {i}:**\n"
+                    response += f"{content[:400]}{'...' if len(content) > 400 else ''}\n\n"
+            
+            return response
         else:
-            return "No encontré información específica para tu consulta."
+            return "No encontré información específica para tu consulta en mi base de conocimientos. ¿Podrías reformular la pregunta o ser más específico sobre qué aspecto del vino te interesa?"
     
     try:
         # Extraer información del RAG
@@ -436,36 +434,57 @@ async def generate_sumiller_response_with_rag(
         rag_content = ""
         
         if rag_sources:
-            rag_content = "Información de la base de conocimientos:\n\n"
+            rag_content = "Información especializada de mi base de conocimientos:\n\n"
             for i, source in enumerate(rag_sources[:3], 1):
                 content = source.get("content", "")
-                # Tomar las primeras 300 caracteres de cada fuente
-                summary = content[:300] + "..." if len(content) > 300 else content
-                rag_content += f"Fuente {i}: {summary}\n\n"
+                metadata = source.get("metadata", {})
+                
+                rag_content += f"Fuente {i}:\n"
+                rag_content += f"Tipo: {metadata.get('type', 'información')}\n"
+                if metadata.get("name"):
+                    rag_content += f"Nombre: {metadata.get('name')}\n"
+                rag_content += f"Contenido: {content[:500]}{'...' if len(content) > 500 else ''}\n\n"
         
         # Contexto del usuario
         context_info = ""
         if user_context.get("recent_conversations"):
-            context_info = f"Contexto del usuario: Ha consultado recientemente sobre {len(user_context['recent_conversations'])} temas."
+            context_info = f"Contexto del usuario: Ha consultado recientemente sobre {len(user_context['recent_conversations'])} temas relacionados con vinos."
         
-        # Prompt especializado para combinar RAG + sumiller
-        system_prompt = """Eres Sumy, un sumiller profesional experto. Tienes acceso a una base de conocimientos especializada.
-
-Tu tarea es proporcionar respuestas profesionales y educativas basándote en:
-1. La información específica de tu base de conocimientos
-2. Tu experiencia como sumiller profesional
-3. El contexto del usuario
-
-Combina la información técnica con consejos prácticos y recomendaciones personalizadas.
-Sé amigable pero profesional, y explica conceptos de manera clara."""
+        if user_context.get("preferences"):
+            prefs = user_context["preferences"]
+            context_info += f"\nPreferencias conocidas: {json.dumps(prefs, ensure_ascii=False)}"
         
-        user_content = f"""Consulta: "{query}"
+        # Prompt especializado para combinar RAG + sumiller - MÁS DETALLADO
+        system_prompt = """Eres Sumy, un sumiller profesional con acceso a una extensa base de conocimientos especializada en vinos y enología.
+
+Tu objetivo es proporcionar respuestas completas, educativas y prácticas que combinen:
+1. La información técnica y específica de tu base de conocimientos
+2. Tu experiencia profesional como sumiller
+3. Consejos prácticos y aplicables
+4. Recomendaciones personalizadas
+
+ESTILO DE RESPUESTA:
+- Combina información técnica con experiencia práctica
+- Sé detallado pero accesible
+- Incluye ejemplos concretos cuando sea posible
+- Proporciona consejos prácticos de servicio, cata o maridaje
+- Conecta conceptos teóricos con aplicaciones reales
+- Usa un tono profesional pero cercano y entusiasta
+
+ESTRUCTURA RECOMENDADA:
+1. Introducción contextualizada a la consulta
+2. Información principal basada en tu base de conocimientos
+3. Análisis y explicación profesional
+4. Recomendaciones específicas o consejos prácticos
+5. Sugerencias adicionales o próximos pasos"""
+        
+        user_content = f"""Consulta del cliente: "{query}"
 
 {rag_content}
 
 {context_info}
 
-Proporciona una respuesta completa y profesional como sumiller experto."""
+Proporciona una respuesta completa y profesional como sumiller experto. Combina la información de tu base de conocimientos con tu experiencia práctica, y asegúrate de incluir consejos útiles y aplicables."""
 
         response = await openai_client.chat.completions.create(
             model=OPENAI_MODEL,
@@ -474,20 +493,40 @@ Proporciona una respuesta completa y profesional como sumiller experto."""
                 {"role": "user", "content": user_content}
             ],
             temperature=0.7,
-            max_tokens=250  # Reducir para evitar timeouts
+            max_tokens=1000  # Aumentado significativamente para respuestas más completas
         )
         
         return response.choices[0].message.content.strip()
         
     except Exception as e:
         logger.error(f"Error generando respuesta RAG+IA: {e}")
-        # Fallback usando solo RAG
+        # Fallback usando solo RAG - MÁS COMPLETO
         if rag_response.get("sources"):
-            sources_text = "\n\n".join([src.get("content", "")[:200] 
-                                      for src in rag_response["sources"][:2]])
-            return f"Basándome en mi conocimiento:\n\n{sources_text}"
+            response = "📚 **Basándome en mi conocimiento especializado:**\n\n"
+            
+            for i, source in enumerate(rag_response["sources"][:3], 1):
+                content = source.get("content", "")
+                metadata = source.get("metadata", {})
+                
+                if metadata.get("type") == "vino":
+                    response += f"**{i}. {metadata.get('name', 'Vino recomendado')}**\n"
+                    if metadata.get("wine_type"):
+                        response += f"   • Tipo: {metadata.get('wine_type')}\n"
+                    if metadata.get("region"):
+                        response += f"   • Región: {metadata.get('region')}\n"
+                    if metadata.get("price"):
+                        response += f"   • Precio: {metadata.get('price')}€\n"
+                    if metadata.get("pairing"):
+                        response += f"   • Maridaje: {metadata.get('pairing')}\n"
+                    response += f"   • Descripción: {content[:300]}{'...' if len(content) > 300 else ''}\n\n"
+                else:
+                    response += f"**Información técnica {i}:**\n"
+                    response += f"{content[:400]}{'...' if len(content) > 400 else ''}\n\n"
+            
+            response += "\n💡 **Como sumiller te recomiendo**: Considera estos factores al elegir y servir el vino para obtener la mejor experiencia."
+            return response
         else:
-            return "Como sumiller, puedo ayudarte con información sobre vinos. ¿Qué te gustaría saber?"
+            return "Como sumiller profesional, puedo ayudarte con cualquier consulta sobre vinos. Mi especialidad incluye recomendaciones personalizadas, técnicas de cata, maridajes, información sobre regiones vitivinícolas, y consejos de servicio. ¿En qué aspecto específico del mundo del vino te gustaría que te asesore?"
 
 # 🆕 ENDPOINT PRINCIPAL CON FILTRO INTELIGENTE
 @app.post("/query", response_model=SumillerResponse)
@@ -503,77 +542,51 @@ async def sumiller_query_with_filter(request: QueryRequest = Body(...)):
         else:
             temp_memory = memory
         
-        # 1. CLASIFICAR CONSULTA CON FILTRO INTELIGENTE
-        if openai_client:
-            classification = await filter_and_classify_query(openai_client, request.query)
+        # 1. DETECTAR MENSAJE SECRETO (única clasificación que mantenemos)
+        query_lower = request.query.lower()
+        secret_triggers = [
+            "pedro", "pedrito", "pepe", "perico", 
+            "vicky", "victoria", "vicki", "vic"
+        ]
+        if any(trigger in query_lower for trigger in secret_triggers):
+            category = "SECRET_MESSAGE"
+            response_text = CATEGORY_RESPONSES.get("SECRET_MESSAGE", "🤫 Mensaje secreto detectado...")
+            wines_recommended = []
+            used_rag = False
+            confidence = 1.0
+            user_context = await temp_memory.get_user_context(request.user_id)
         else:
-            # Fallback sin IA
-            classification = {
-                "category": "WINE_SEARCH",
-                "confidence": 0.7,
-                "reasoning": "Fallback sin IA",
-                "should_use_rag": True
-            }
-        
-        logger.info(f"🔍 Clasificación: {classification}")
-        
-        # 2. OBTENER CONTEXTO DEL USUARIO
-        user_context = await temp_memory.get_user_context(request.user_id)
-        
-        # 3. DECIDIR ESTRATEGIA SEGÚN CLASIFICACIÓN
-        category = classification["category"]
-        should_search = classification.get("should_use_rag", False)
-        
-        wines_recommended = []
-        used_rag = False
-        
-        # 4. GENERAR RESPUESTA SEGÚN CATEGORÍA
-        if category in ["SECRET_MESSAGE", "GREETING", "OFF_TOPIC"]:
-            # Respuesta predefinida
-            response_text = CATEGORY_RESPONSES.get(category, "Como sumiller, me especializo en vinos.")
+            # 2. SIEMPRE USAR RAG - Dejar que el RAG decida qué contestar
+            logger.info("🤖 Consultando RAG service para cualquier consulta...")
             
-        elif category == "WINE_THEORY":
-            # ✨ USAR RAG para conocimiento profundo sobre teoría de vinos
-            logger.info("🎓 Consultando RAG para conocimiento teórico...")
+            # Obtener contexto del usuario
+            user_context = await temp_memory.get_user_context(request.user_id)
+            
+            # Consultar RAG service
             rag_response = await query_rag_service(request.query, user_context)
             
-            if rag_response.get("answer") and not rag_response.get("error"):
-                # Combinar RAG con respuesta personalizada del sumiller
-                response_text = await generate_sumiller_response_with_rag(
-                    request.query, rag_response, user_context, category
-                )
-                used_rag = True
-            else:
-                # Fallback a respuesta normal si RAG falla
-                logger.warning(f"⚠️ RAG falló: {rag_response.get('error', 'Unknown error')}")
-                response_text = await generate_sumiller_response(
-                    request.query, [], user_context, category
-                )
-            
-        elif category == "WINE_SEARCH" and should_search:
-            # ✨ USAR RAG para búsqueda de vinos (no search_wines local)
-            logger.info("🍷 Consultando RAG para búsqueda de vinos...")
-            rag_response = await query_rag_service(request.query, user_context)
+            wines_recommended = []
+            used_rag = True
+            category = "RAG_RESPONSE"
+            confidence = 0.8
             
             if rag_response.get("sources") and not rag_response.get("error"):
-                # Convertir fuentes RAG a formato wines_recommended
-                wines_recommended = []
+                # Procesar fuentes de vinos si las hay
                 logger.info(f"🍇 Procesando {len(rag_response['sources'])} fuentes RAG...")
                 
                 for i, src in enumerate(rag_response["sources"]):
                     logger.info(f"🔍 Fuente {i+1}: {src.get('metadata', {})}")
                     
-                    if src.get("metadata", {}).get("type") == "wine":
+                    if src.get("metadata", {}).get("type") in ["wine", "vino"]:
                         wine_data = src["metadata"].copy()
                         wine_data["relevance_score"] = src.get("relevance_score", 0)
                         
-                        # Extraer descripción del contenido - mejorado
+                        # Extraer descripción del contenido
                         content = src.get("content", "")
                         if "Descripción: " in content:
                             description = content.split("Descripción: ")[1].split("\n")[0]
                             wine_data["description"] = description
                         elif content:
-                            # Si no hay "Descripción:", usar las primeras líneas del contenido
                             lines = content.split("\n")
                             description_lines = [line for line in lines if line.strip() and not line.startswith("Vino:")]
                             if description_lines:
@@ -583,28 +596,32 @@ async def sumiller_query_with_filter(request: QueryRequest = Body(...)):
                         logger.info(f"✅ Vino añadido: {wine_data.get('name', 'Unknown')}")
                 
                 logger.info(f"🍷 Total vinos encontrados: {len(wines_recommended)}")
-                used_rag = True
                 
-                response_text = await generate_sumiller_response(
-                    request.query, wines_recommended, user_context, category
-                )
+                # Generar respuesta inteligente basada en el contenido RAG
+                if wines_recommended:
+                    # Si hay vinos, generar respuesta de recomendación
+                    response_text = await generate_sumiller_response(
+                        request.query, wines_recommended, user_context, "WINE_SEARCH"
+                    )
+                elif rag_response.get("answer"):
+                    # Si hay respuesta teórica del RAG, usarla
+                    response_text = await generate_sumiller_response_with_rag(
+                        request.query, rag_response, user_context, "WINE_THEORY"
+                    )
+                else:
+                    # Respuesta general basada en las fuentes disponibles
+                    response_text = await generate_sumiller_response(
+                        request.query, [], user_context, "GENERAL"
+                    )
             else:
-                # Fallback a búsqueda local si RAG falla
-                logger.warning(f"⚠️ RAG falló para búsqueda de vinos: {rag_response.get('error', 'Unknown error')}")
-                wines_recommended = await search_wines(request.query)
-                used_rag = False
-                
+                # Si RAG falla, respuesta general del sumiller
+                logger.warning(f"⚠️ RAG falló: {rag_response.get('error', 'Unknown error')}")
                 response_text = await generate_sumiller_response(
-                    request.query, wines_recommended, user_context, category
+                    request.query, [], user_context, "GENERAL"
                 )
-            
-        else:
-            # Respuesta general del sumiller
-            response_text = await generate_sumiller_response(
-                request.query, [], user_context, "WINE_THEORY"
-            )
+                used_rag = False
         
-        # 5. GUARDAR INTERACCIÓN EN MEMORIA
+        # 3. GUARDAR INTERACCIÓN EN MEMORIA
         await temp_memory.save_conversation(
             request.user_id,
             request.query,
@@ -613,12 +630,12 @@ async def sumiller_query_with_filter(request: QueryRequest = Body(...)):
             request.session_id
         )
         
-        # 6. RESPUESTA FINAL
+        # 4. RESPUESTA FINAL
         return SumillerResponse(
             response=response_text,
             wines_recommended=wines_recommended,
             user_context=user_context,
-            confidence=classification["confidence"],
+            confidence=confidence,
             query_category=category,
             used_rag=used_rag
         )

@@ -1,20 +1,12 @@
 steps:
   # Build the container image
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['build', '-t', 'gcr.io/$PROJECT_ID/agentic-rag-service:$COMMIT_SHA', '.']
+    args: ['build', '-t', 'gcr.io/multiagentes-ia/agentic-rag-service:latest', '.']
     timeout: '1200s'
 
   # Push the container image to Container Registry
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['push', 'gcr.io/$PROJECT_ID/agentic-rag-service:$COMMIT_SHA']
-
-  # Tag latest
-  - name: 'gcr.io/cloud-builders/docker'
-    args: ['tag', 'gcr.io/$PROJECT_ID/agentic-rag-service:$COMMIT_SHA', 'gcr.io/$PROJECT_ID/agentic-rag-service:latest']
-
-  # Push latest tag
-  - name: 'gcr.io/cloud-builders/docker'
-    args: ['push', 'gcr.io/$PROJECT_ID/agentic-rag-service:latest']
+    args: ['push', 'gcr.io/multiagentes-ia/agentic-rag-service:latest']
 
   # Deploy container image to Cloud Run
   - name: 'gcr.io/cloud-builders/gcloud'
@@ -23,7 +15,7 @@ steps:
       - 'deploy'
       - 'agentic-rag-service'
       - '--image'
-      - 'gcr.io/$PROJECT_ID/agentic-rag-service:$COMMIT_SHA'
+      - 'gcr.io/multiagentes-ia/agentic-rag-service:latest'
       - '--region'
       - 'europe-west1'
       - '--platform'
@@ -47,8 +39,7 @@ steps:
       - 'ENVIRONMENT=production,USE_EMBEDDED_CHROMA=true,PYTHONUNBUFFERED=1'
 
 images:
-  - 'gcr.io/$PROJECT_ID/agentic-rag-service:$COMMIT_SHA'
-  - 'gcr.io/$PROJECT_ID/agentic-rag-service:latest'
+  - 'gcr.io/multiagentes-ia/agentic-rag-service:latest'
 
 options:
   machineType: 'E2_HIGHCPU_8'
